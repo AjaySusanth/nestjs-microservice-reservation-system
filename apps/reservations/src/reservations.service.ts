@@ -1,0 +1,35 @@
+import { Injectable } from '@nestjs/common';
+import { CreateReservationDto } from './dto/create-reservation.dto';
+import { UpdateReservationDto } from './dto/update-reservation.dto';
+import { ReservationRepository } from './reservation.respository';
+
+@Injectable()
+export class ReservationsService {
+  constructor(protected readonly reservationRepository:ReservationRepository) {}
+  create(createReservationDto: CreateReservationDto) {
+    return this.reservationRepository.create({
+      ...createReservationDto,
+      timestamp: new Date(),
+      userId:'123'
+    })
+  }
+
+  findAll() {
+    return this.reservationRepository.find({});
+  }
+
+  findOne(_id: string) {
+    return this.reservationRepository.findOne({_id});
+  }
+
+  update(_id: string, updateReservationDto: UpdateReservationDto) {
+    return this.reservationRepository.findOneAndUpdate(
+      {_id},
+      {$set: updateReservationDto} //$set ensures you only update specific fields in MongoDB, not the whole document.
+    );
+  }
+
+  remove(_id: string) {
+    return this.reservationRepository.findOneAndDelete({_id});
+  }
+}
