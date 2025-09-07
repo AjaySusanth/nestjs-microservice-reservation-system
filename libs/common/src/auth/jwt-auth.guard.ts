@@ -3,6 +3,7 @@ import { map, Observable, tap } from "rxjs";
 
 import { ClientProxy } from "@nestjs/microservices";
 import { AUTH_SERVICE } from "../constants";
+import { UserDto } from "../dto";
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
     // CanActivate =>  guard in NestJS for route protection.
@@ -13,7 +14,7 @@ export class JwtAuthGuard implements CanActivate {
             return false
         }
 
-        return this.authClient.send('authenticate',{ // authenticate = message pattern in auth.controller,ts
+        return this.authClient.send<UserDto>('authenticate',{ // authenticate = message pattern in auth.controller,ts
             Authentication:jwt
         }).pipe(
             tap((res)=> {
