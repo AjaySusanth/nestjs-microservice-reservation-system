@@ -25,7 +25,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @MessagePattern('authenticate')
   async authenticate(data:any) {
-    console.log("User returned by validate:",data.user)
+    //console.log("User returned by validate:",data.user)
     return data.user
   }
 

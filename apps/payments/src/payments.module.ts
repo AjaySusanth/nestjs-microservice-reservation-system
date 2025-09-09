@@ -10,7 +10,8 @@ import { LoggerModule } from '@app/common';
               isGlobal:true,
               envFilePath: ['apps/payments/.env'], // for local dev, not required in docker
               validationSchema: Joi.object({
-                PORT:Joi.number().required()
+                PORT:Joi.number().required(),
+                STRIPE_SECRET_KEY:Joi.string().required()
               })
             }),
     LoggerModule
