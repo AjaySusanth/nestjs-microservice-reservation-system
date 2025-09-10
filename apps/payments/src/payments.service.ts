@@ -1,18 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
-import { CreateChargeDto } from '@app/common'
+import { PaymentsCreateChargeDto } from './dto/payments-create-charge.dto';
+import { NOTIFICATIONS_SERVICE } from '../../../libs/common/src';
+import { ClientProxy } from '@nestjs/microservices';
 @Injectable()
 export class PaymentsService {
   private readonly stripe: Stripe;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject(NOTIFICATIONS_SERVICE)
+    private readonly notificationsService: ClientProxy
+  ) {
     this.stripe = new Stripe(
       this.configService.get<string>('STRIPE_SECRET_KEY')!,
     );
   }
 
-  async createCharge({ amount }: CreateChargeDto) {
+  async createCharge({ amount,email }: PaymentsCreateChargeDto) {
 
     const paymentIntent = await this.stripe.paymentIntents.create({
       payment_method: "pm_card_visa",
@@ -24,6 +30,8 @@ export class PaymentsService {
         allow_redirects: 'never', // <--- block redirect-based methods
       }
     });
+
+    this.notificationsService.emit('notify_email',{email, text:`Your payment of $${amount} has been completed`})
 
     return paymentIntent;
   }

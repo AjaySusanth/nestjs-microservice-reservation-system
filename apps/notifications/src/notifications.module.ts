@@ -12,6 +12,11 @@ import * as Joi from 'joi'
       envFilePath: ['apps/notifications/.env'], // for local dev, not required in docker
       validationSchema: Joi.object({
         PORT:Joi.number().required(),
+        GOOGLE_AUTH_CLIENT_ID:Joi.string().required(),
+        GOOGLE_AUTH_CLIENT_SECRET:Joi.string().required(),
+        GOOGLE_AUTH_REFRESH_TOKEN:Joi.string().required(),
+        SMTP_USER:Joi.string().required(),
+
       })
     }),
     LoggerModule
