@@ -6,9 +6,9 @@ import { AbstractDocument } from "@app/common";
 export class UserDocument extends AbstractDocument {
 
     @Prop()
-    email:string
+    email:string;
     @Prop()
-    password:string
+    password:string;
     
 }
 
