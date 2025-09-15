@@ -19,7 +19,7 @@ export class AuthService {
       httpOnly:true,
       expires
     })  
-    return user
+    return token
   }
    
 }
