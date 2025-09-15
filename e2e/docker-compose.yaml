@@ -1,0 +1,36 @@
+services:
+  e2e:
+    build:
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./specs:/usr/src/app/specs
+    depends_on:
+      - reservations
+      - auth
+      - payments
+      - notifications
+
+  reservations:
+    image: ajaysusanth/reservations:latest
+    env_file:
+      - ../apps/reservations/.env
+    ports:
+      - '3000:3000'
+  auth:
+    image: ajaysusanth/auth:latest
+    env_file:
+      - ../apps/auth/.env
+    ports:
+      - '3001:3001'
+  payments:
+    image: ajaysusanth/payments:latest
+    ports:
+      - '3003:3003'
+    env_file:
+      - ../apps/payments/.env
+  notifications:
+    image: ajaysusanth/notifications:latest
+    ports:
+      - '3004:3004'
+    env_file:
+      - ../apps/notifications/.env
