@@ -1,98 +1,138 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS Microservice Reservation System
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A structured NestJS monorepo implementing a reservation system split into dedicated microservices, with a shared common library, Dockerized development, and a conventional Node.js toolchain.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Highlights
+- Modular monorepo with clear domain-driven services
+- Dockerized per-service setup with hot-reload for local dev
+- Shared reusable library under `libs/common` with path alias `@app/common`
+- Strong TypeScript setup (compiler options, path mapping, strict mode)
+- ESLint + Prettier formatting and linting
+- Jest testing configuration (unit + e2e scaffolding present)
+- Automated container image build & push via GitHub Actions (matrix build)
+- Kubernetes manifests directory present for cluster deployment (`k8s/`)
 
-## Description
+## Tech Stack
+- TypeScript (primary language)
+- NestJS 11 (CLI-managed monorepo)
+- Node.js
+- Docker & Docker Compose
+- GitHub Actions (CI for building/pushing service images)
+- Kubernetes (manifests stored under `k8s/`)
+- Jest (testing)
+- ESLint + Prettier (code quality)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+## Monorepo Layout
+```
+apps/
+  auth/              # Authentication service
+  notifications/     # Notifications service
+  payments/          # Payments service
+  reservations/      # Reservations service
+libs/
+  common/            # Shared library (import via @app/common)
+k8s/
+  reservation-system/  # Kubernetes manifests (directory present)
+e2e/                 # End-to-end test scaffold
+.github/
+  workflows/ci.yml   # CI pipeline
+docker-compose.yml
+nest-cli.json
+tsconfig.json
 ```
 
-## Compile and run the project
+## Services and Ports (Docker Compose)
+- reservations: `3000 -> 3000`
+- auth: `3001 -> 3001`
+- payments: `3002 -> 3002`
+- notifications: `3003 -> 3003`
 
+Each service:
+- Has its own `Dockerfile` at `apps/<service>/Dockerfile`
+- Uses an `.env` file (per service path) when run with Compose
+- Mounts source for live reload during development
+
+## GitHub Actions CI (Container Build & Push)
+Workflow file: [.github/workflows/ci.yml](https://github.com/AjaySusanth/nestjs-microservice-reservation-system/blob/main/.github/workflows/ci.yml)
+
+Confirmed behavior:
+- Triggers on pushes and pull requests to `main`
+- Matrix builds for: `auth`, `reservations`, `payments`, `notifications`
+- Steps:
+  1. Checkout repository
+  2. (On push) Login to Docker Hub using `DOCKER_USERNAME` / `DOCKER_PASSWORD` secrets
+  3. Build image with:
+     ```
+     docker build -f ./apps/${service}/Dockerfile \
+       -t ${DOCKER_USERNAME}/${service}:latest \
+       --target production .
+     ```
+  4. (On push) Push image: `docker push ${DOCKER_USERNAME}/${service}:latest`
+
+Secrets required:
+- `DOCKER_USERNAME`
+- `DOCKER_PASSWORD`
+
+This enables automatic fresh images for each microservice on merges to `main`.
+
+## Getting Started
+
+Prerequisites:
+- Node.js & npm
+- Docker + Docker Compose (for multi-service dev)
+- (Optional) kubectl & a Kubernetes cluster (for manifests in `k8s/`)
+
+Install dependencies:
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
-
+Run a single service in watch mode:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# Replace <service> with one of: reservations | auth | payments | notifications
+npm run start:dev <service>
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+Build all projects:
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run build
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Run with Docker Compose:
+```bash
+# Single service
+docker compose up reservations
 
-## Resources
+# Multiple
+docker compose up reservations auth payments notifications
 
-Check out a few resources that may come in handy when working with NestJS:
+# Rebuild if needed
+docker compose up --build
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Selected npm Scripts
+- `build` — compile all projects
+- `start` — start default app
+- `start:dev <service>` — watch & reload specific service
+- `start:debug` — debug mode
+- `lint` — ESLint over apps/libs/tests
+- `test` — Jest unit tests
+- `test:watch` — Jest watch
+- `test:cov` — coverage
+- `test:debug` — debug tests
+- `test:e2e` — e2e (scaffold present)
 
-## Support
+## Shared Library
+- Alias: `@app/common` → `libs/common/src`
+- Central place for shared constructs (DTOs, guards, utilities, etc.)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Configuration Files
+- `nest-cli.json` — declares each project & its tsconfig
+- `tsconfig.json` — strict compiler options + path mapping
+- `docker-compose.yml` — orchestration for local development
+- `.github/workflows/ci.yml` — multi-service Docker image CI pipeline
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Language Composition
+- TypeScript: 92.6%
+- Dockerfile: 5.4%
+- JavaScript: 2.0%
