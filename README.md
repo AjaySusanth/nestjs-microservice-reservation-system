@@ -10,7 +10,7 @@ A structured NestJS monorepo implementing a reservation system split into dedica
 - ESLint + Prettier formatting and linting
 - Jest testing configuration (unit + e2e scaffolding present)
 - Automated container image build & push via GitHub Actions (matrix build)
-- Kubernetes manifests directory present for cluster deployment (`k8s/`)
+- Kubernetes manifests for cluster deployment (`k8s/`)
 
 ## Tech Stack
 - TypeScript (primary language)
@@ -136,3 +136,4 @@ docker compose up --build
 - TypeScript: 92.6%
 - Dockerfile: 5.4%
 - JavaScript: 2.0%
+
